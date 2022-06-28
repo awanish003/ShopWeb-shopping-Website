@@ -1,0 +1,121 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} Title of Tracker{% endblock %}
+
+{% block body%}
+<div class="container">
+    <div class="col my-4">
+        <h2>STEP-1 SWOPWEB.in Cart Express Tracker- Track Your Products Here</h2>
+    </div>
+
+    <div class="col my-6">
+        <h2>Enter Order Id and Email to track Your Order...</h2>
+        <form action="#" id="trackerform" method="post">{% csrf_token %}
+            <div class="mb-3">
+                <div class="col-auto">
+                    <label for="inputName" class="col-form-label">Order Id</label>
+                    <input type="text" class="form-control" id="orderid" name="orderid" aria-describedby="orderidHelp"
+                        placeholder="Enter Order Id...">
+                </div>
+            </div>
+            <div class="mb-3 col">
+                <label for="exampleInputEmail1" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp"
+                    placeholder="Enter E-mail....">
+                <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Track Order</button>
+        </form>
+
+        <div class="col my-5">
+            <h2> your Order Status</h2>
+            <div class="container" id="items">
+                Enter Your OrderId And Email To Track Your Order...
+            </div>
+
+            <!-- <ul class="list-group" id="items"> 
+        </ul> -->
+        </div>
+        <div class="col my-5">
+            <h2> your Order Details</h2>
+            <div class="container" id="citems">
+                Enter Your OrderId And Email To Track Your Order...
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+    crossorigin="anonymous"></script>
+<script>
+    jQuery(function ($) {
+        $('#trackerform').submit(function (event) {
+            var formData = {
+                'orderid': $('input[name=orderid]').val(),
+                'email': $('input[name=email]').val(),
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '/shop/tracker/',
+                data: formData,
+                encode: true
+            })
+
+                .done(function (data) {
+                    $('#citems').empty()
+                    $('#items').empty()
+                    console.log(data)
+                    data = JSON.parse(data);
+                    if (data['status'] == 'success') {
+                        updates = data['updates'];
+                        for (i = 0; i < updates.length; i++) {
+                            let text = updates[i]['text'];
+                            let time = updates[i]['time'];
+                            mystr = `<div class="my-4">
+                <button type="button" class="btn btn-info">${text} <span
+                    class="badge bg-warning">${time}</span></button>
+                </div>`
+                            $('#items').append(mystr)
+                        }
+
+                        cart = JSON.parse(data['itemjson']);
+                        for (var item in cart) {
+                            let name = cart[item][1];
+                            let qty = cart[item][0];
+                            mystr = `<div class="my-4">
+                <button type="button" class="btn btn-info">${name} <span
+                    class="badge bg-warning">${qty}</span></button>
+                </div>`
+                            $('#citems').append(mystr)
+                        }
+
+                    } else {
+                        mystr = `<div class="my-4">
+                 <span
+                    class="badge bg-warning">Sorry Can't Find Any Updates Please Try With Correct OrderId And E-mail</span>
+                </div>`
+                        $('#items').append(mystr)
+                        $('#citems').append(mystr)
+                    }
+
+                });
+            event.preventDefault();
+        })
+    })
+</script>
+
+
+{% endblock %}
+
+
+<!-- <div class="my-4">
+    <button type="button" class="btn btn-primary">${name} <span
+            class="badge bg-secondary">${qty}</span></button>
+</div>` -->
+
+<!-- <li class="list-group-item d-flex justify-content-between align-items-center">
+    ${name}<span class="badge badge-primary badg-pill">${qty}</span>
+    </li> -->
